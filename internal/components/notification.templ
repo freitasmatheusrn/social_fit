@@ -1,0 +1,9 @@
+package components
+
+import "fmt"
+
+templ ToastError(code int, message string) {
+    <div class="toast toast-error" role="alert">
+        <span>Erro {fmt.Sprintf("%d", code)}: {message}</span>
+    </div>
+}
