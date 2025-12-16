@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/freitasmatheusrn/social-fit/assets"
 	"github.com/freitasmatheusrn/social-fit/config"
 	"github.com/freitasmatheusrn/social-fit/internal/user"
 	"github.com/freitasmatheusrn/social-fit/pkg/auth"
@@ -21,9 +22,11 @@ func (app *application) mount() http.Handler {
 	e := echo.New()
 	defaultErrorHandler := e.HTTPErrorHandler
 	e.HTTPErrorHandler = chttp.CustomHTTPErrorHandler(defaultErrorHandler)
+	e.StaticFS("/assets", assets.Files)
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	userHandler := user.NewHandler()
+	usrService := user.NewService(user.NewRepo(app.db))
+	userHandler := user.NewHandler(usrService)
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(auth.JWTCustomClaims)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"os"
 
@@ -16,6 +17,7 @@ func main() {
 	}
 	dsn := fmt.Sprintf(
 		"%s://%s:%s@localhost:5432/%s", config.DBDriver, config.DBUser, config.DBPassword, config.DBName)
+	log.Println(dsn)
 	db, err := database.InitPostgres(dsn)
 	if err != nil {
 		panic("error starting db")
