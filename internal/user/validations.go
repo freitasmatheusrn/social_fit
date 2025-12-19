@@ -1,39 +1,45 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 	"net/mail"
 	"time"
 	"unicode"
 
+	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func (u User) ValidatePassword(password []byte) error {
+func (u User) ComparePassword(password []byte) error {
 	return bcrypt.CompareHashAndPassword([]byte(u.Password), password)
 
 }
 
-func (u User) ValidateFields() error {
-	err := EmailValid(u.Email)
-	if err != nil {
-		return err
+func (u User) ValidateFields() *rest.ApiErr {
+	var causes []rest.Causes
+
+	if err := EmailValid(u.Email); err != nil {
+		causes = append(causes, rest.Causes{Field: "email", Message: err.Error()})
 	}
-	err = PasswordValid(u.Password)
-	if err != nil {
-		return err
+	if passwordErrs := PasswordValid(u.Password); passwordErrs != nil {
+		for _, e := range passwordErrs {
+			causes = append(causes, rest.Causes{Field: "password", Message: e.Error()})
+		}
 	}
-	err = NameValid(u.Name)
-	if err != nil {
-		return err
+	if err := NameValid(u.Name); err != nil {
+		causes = append(causes, rest.Causes{Field: "name", Message: err.Error()})
 	}
-	err = CPFValid(u.Cpf)
-	if err != nil {
-		return err
+	if err := CPFValid(u.Cpf); err != nil {
+		causes = append(causes, rest.Causes{Field: "cpf", Message: err.Error()})
 	}
-	err = BirthDateValid(u.BirthDate)
-	if err != nil {
-		return err
+	if birthDateErrs := BirthDateValid(u.BirthDate); birthDateErrs != nil {
+		for _, e := range birthDateErrs {
+			causes = append(causes, rest.Causes{Field: "birth_date", Message: e.Error()})
+		}
+	}
+	if causes != nil {
+		return rest.NewBadRequestValidationError("Campo(s) inválidos", causes)
 	}
 	return nil
 }
@@ -46,11 +52,11 @@ func EmailValid(email string) error {
 	return nil
 }
 
-func PasswordValid(password string) error {
+func PasswordValid(password string) []error {
+	var errs []error
 	if len(password) < 8 {
-		return fmt.Errorf("senha deve conter ao menos 8 caracteres")
+		errs = append(errs, errors.New("senha precisa ter 8 ou mais caracteres"))
 	}
-
 	var hasLower, hasUpper, hasNumber, hasSymbol bool
 
 	for _, r := range password {
@@ -65,26 +71,28 @@ func PasswordValid(password string) error {
 			hasSymbol = true
 		}
 	}
-
 	if !hasLower {
-		return fmt.Errorf("senha deve conter ao menos uma letra minúscula")
+		errs = append(errs, errors.New("senha deve conter ao menos uma letra minúscula"))
 	}
 	if !hasUpper {
-		return fmt.Errorf("senha deve conter ao menos uma letra maiúscula")
+		errs = append(errs, errors.New("senha deve conter ao menos uma letra maiúscula"))
+
 	}
 	if !hasNumber {
-		return fmt.Errorf("senha deve conter ao menos um número")
+		errs = append(errs, errors.New("senha deve conter ao menos um número"))
 	}
 	if !hasSymbol {
-		return fmt.Errorf("senha deve conter ao menos um símbolo")
+		errs = append(errs, errors.New("senha deve conter ao menos um símbolo"))
 	}
-
+	if errs != nil {
+		return errs
+	}
 	return nil
 }
 
 func NameValid(name string) error {
 	if len(name) <= 3 {
-		return fmt.Errorf("nome deve conter ao menos 3 letras")
+		return errors.New("nome deve conter ao menos 3 letras")
 	}
 	return nil
 }
@@ -98,7 +106,7 @@ func CPFValid(cpf string) error {
 	}
 
 	if len(digits) != 11 {
-		return fmt.Errorf("cpf inválido")
+		return errors.New("cpf inválido")
 	}
 
 	allEqual := true
@@ -109,7 +117,7 @@ func CPFValid(cpf string) error {
 		}
 	}
 	if allEqual {
-		return fmt.Errorf("cpf inválido")
+		return errors.New("cpf inválido")
 	}
 
 	sum := 0
@@ -121,7 +129,7 @@ func CPFValid(cpf string) error {
 		firstDV = 0
 	}
 	if firstDV != digits[9] {
-		return fmt.Errorf("cpf inválido")
+		return errors.New("cpf inválido")
 	}
 
 	sum = 0
@@ -133,13 +141,18 @@ func CPFValid(cpf string) error {
 		secondDV = 0
 	}
 	if secondDV != digits[10] {
-		return fmt.Errorf("cpf inválido")
+		return errors.New("cpf inválido")
 	}
 
 	return nil
 }
 
-func BirthDateValid(birthDate time.Time) error {
+func BirthDateValid(birthDateStr string) []error {
+	var errs []error
+	birthDate, err := time.Parse("2006-01-02", birthDateStr)
+	if err != nil {
+		errs = append(errs, err)
+	}
 	now := time.Now()
 
 	birth := time.Date(
@@ -166,8 +179,10 @@ func BirthDateValid(birthDate time.Time) error {
 	}
 
 	if age < 10 {
-		return fmt.Errorf("idade mínima é 10 anos")
+		errs = append(errs, errors.New("idade mínima é 10 anos"))
 	}
-
+	if errs != nil {
+		return errs
+	}
 	return nil
 }

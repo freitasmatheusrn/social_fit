@@ -1,12 +1,55 @@
 package userpgs
 
-import "github.com/freitasmatheusrn/social-fit/internal/components"
+import (
+	"github.com/freitasmatheusrn/social-fit/pkg/rest"
+	"github.com/freitasmatheusrn/social-fit/internal/views"
+	)
 
-templ Signup() {
-	@components.Base() {
+
+
+
+type SignupFormData struct {
+	Name      string
+	CPF       string
+	Email     string
+	Phone     string
+	BirthDate string
+}
+
+func hasFieldErrors(errs *rest.ApiErr, fieldName string) bool {
+	if errs == nil || len(errs.Causes) == 0 {
+		return false
+	}
+
+	for _, cause := range errs.Causes {
+		if cause.Field == fieldName {
+			return true
+		}
+	}
+
+	return false
+}
+
+
+func getFieldErrors(errs *rest.ApiErr, fieldName string) []rest.Causes {
+	if errs == nil || len(errs.Causes) == 0 {
+		return nil
+	}
+
+	var fieldErrors []rest.Causes
+	for _, cause := range errs.Causes {
+		if cause.Field == fieldName {
+			fieldErrors = append(fieldErrors, cause)
+		}
+	}
+
+	return fieldErrors
+}
+
+templ Signup(errs *rest.ApiErr ) {
+	@views.Base() {
 		<div class="min-h-screen flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
 			<div class="max-w-md w-full space-y-8">
-				<!-- Logo/Header -->
 				<div class="text-center">
 					<div class="mx-auto h-16 w-16 bg-gradient-to-br from-purple-600 to-purple-800 rounded-2xl flex items-center justify-center shadow-lg">
 						<svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,131 +63,238 @@ templ Signup() {
 						Preencha seus dados para começar
 					</p>
 				</div>
-				<!-- Form -->
 				<div class="bg-white rounded-2xl shadow-xl p-8">
-					<form class="space-y-6" method="POST" action="/signup">
-						<!-- Nome -->
-						<div>
-							<label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-								Nome completo
-							</label>
-							<input
-								id="name"
-								name="name"
-								type="text"
-								required
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="Seu nome completo"
-							/>
-						</div>
-						<!-- CPF -->
-						<div>
-							<label for="cpf" class="block text-sm font-medium text-gray-700 mb-2">
-								CPF
-							</label>
-							<input
-								id="cpf"
-								name="cpf"
-								type="text"
-								required
-								maxlength="14"
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="000.000.000-00"
-							/>
-						</div>
-						<!-- Email -->
-						<div>
-							<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-								E-mail
-							</label>
-							<input
-								id="email"
-								name="email"
-								type="email"
-								required
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="seu@email.com"
-							/>
-						</div>
-						<!-- Telefone -->
-						<div>
-							<label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-								Telefone
-							</label>
-							<input
-								id="phone"
-								name="phone"
-								type="tel"
-								required
-								maxlength="15"
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="(00) 00000-0000"
-							/>
-						</div>
-						<!-- Data de Nascimento -->
-						<div>
-							<label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">
-								Data de nascimento
-							</label>
-							<input
-								id="birth_date"
-								name="birth_date"
-								type="date"
-								required
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-							/>
-						</div>
-						<!-- Senha -->
-						<div>
-							<label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-								Senha
-							</label>
-							<input
-								id="password"
-								name="password"
-								type="password"
-								required
-								minlength="8"
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="••••••••"
-							/>
-						</div>
-						<!-- Confirmar Senha -->
-						<div>
-							<label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-								Confirmar senha
-							</label>
-							<input
-								id="password_confirmation"
-								name="password_confirmation"
-								type="password"
-								required
-								minlength="8"
-								class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent transition duration-150"
-								placeholder="••••••••"
-							/>
-						</div>
-						<!-- Botão Submit -->
-						<div>
-							<button
-								type="submit"
-								class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition duration-150"
-							>
-								Criar conta
-							</button>
-						</div>
-						<!-- Link para login -->
-						<div class="text-center">
-							<p class="text-sm text-gray-600">
-								Já tem uma conta?
-								<a href="/login" class="font-medium text-purple-600 hover:text-purple-700 transition duration-150">
-									Fazer login
-								</a>
-							</p>
-						</div>
-					</form>
+					@SignupForm(errs, SignupFormData{})
 				</div>
 			</div>
 		</div>
 	}
 }
+
+templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
+	<form 
+		class="space-y-6" 
+		hx-post="/create_user" 
+		hx-target="this"
+		hx-swap="outerHTML"
+	>
+		<!-- Nome -->
+		<div>
+			<label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+				Nome completo
+			</label>
+			<input
+				id="name"
+				name="name"
+				type="text"
+				required
+				value={ data.Name }
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "name")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "name")),
+				}
+				placeholder="Seu nome completo"
+			/>
+			<!-- CORRIGIDO: itera sobre fieldErr que é rest.Causes, não error -->
+			if hasFieldErrors(errs, "name") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "name") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- CPF -->
+		<div>
+			<label for="cpf" class="block text-sm font-medium text-gray-700 mb-2">
+				CPF
+			</label>
+			<input
+				id="cpf"
+				name="cpf"
+				type="text"
+				required
+				maxlength="14"
+				value={ data.CPF }
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "cpf")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "cpf")),
+				}
+				placeholder="000.000.000-00"
+			/>
+			if hasFieldErrors(errs, "cpf") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "cpf") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Email -->
+		<div>
+			<label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+				E-mail
+			</label>
+			<input
+				id="email"
+				name="email"
+				type="email"
+				required
+				value={ data.Email }
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "email")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "email")),
+				}
+				placeholder="seu@email.com"
+			/>
+			if hasFieldErrors(errs, "email") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "email") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Telefone -->
+		<div>
+			<label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+				Telefone
+			</label>
+			<input
+				id="phone"
+				name="phone"
+				type="tel"
+				required
+				maxlength="15"
+				value={ data.Phone }
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "phone")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "phone")),
+				}
+				placeholder="(00) 00000-0000"
+			/>
+			if hasFieldErrors(errs, "phone") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "phone") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Data de Nascimento -->
+		<div>
+			<label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">
+				Data de nascimento
+			</label>
+			<input
+				id="birth_date"
+				name="birth_date"
+				type="date"
+				required
+				value={ data.BirthDate }
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "birth_date")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "birth_date")),
+				}
+			/>
+			if hasFieldErrors(errs, "birth_date") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "birth_date") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Senha -->
+		<div>
+			<label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+				Senha
+			</label>
+			<input
+				id="password"
+				name="password"
+				type="password"
+				required
+				minlength="8"
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password")),
+				}
+				placeholder="••••••••"
+			/>
+			if hasFieldErrors(errs, "password") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "password") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Confirmar Senha -->
+		<div>
+			<label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+				Confirmar senha
+			</label>
+			<input
+				id="password_confirmation"
+				name="password_confirmation"
+				type="password"
+				required
+				minlength="8"
+				class={
+					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
+					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password_confirmation")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password_confirmation")),
+				}
+				placeholder="••••••••"
+			/>
+			if hasFieldErrors(errs, "password_confirmation") {
+				<div class="mt-1 space-y-1">
+					for _, fieldErr := range getFieldErrors(errs, "password_confirmation") {
+						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
+					}
+				</div>
+			}
+		</div>
+		
+		<!-- Botão Submit com indicador de loading -->
+		<div>
+			<button
+				type="submit"
+				class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition duration-150 disabled:opacity-50"
+				hx-indicator="#spinner"
+			>
+				<span id="button-text">Criar conta</span>
+				<span id="spinner" class="htmx-indicator ml-2">
+					<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+						<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+				</span>
+			</button>
+		</div>
+		
+		<!-- Link para login -->
+		<div class="text-center">
+			<p class="text-sm text-gray-600">
+				Já tem uma conta?
+				<a href="/login" class="font-medium text-purple-600 hover:text-purple-700 transition duration-150">
+					Fazer login
+				</a>
+			</p>
+		</div>
+	</form>
+}
+

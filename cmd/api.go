@@ -10,33 +10,36 @@ import (
 	"github.com/freitasmatheusrn/social-fit/config"
 	"github.com/freitasmatheusrn/social-fit/internal/user"
 	"github.com/freitasmatheusrn/social-fit/pkg/auth"
-	"github.com/freitasmatheusrn/social-fit/pkg/chttp"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/freitasmatheusrn/social-fit/pkg/handlers"
 )
 
 func (app *application) mount() http.Handler {
 	e := echo.New()
-	defaultErrorHandler := e.HTTPErrorHandler
-	e.HTTPErrorHandler = chttp.CustomHTTPErrorHandler(defaultErrorHandler)
+	e.HTTPErrorHandler = handlers.CustomErrorHandler
 	e.StaticFS("/assets", assets.Files)
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	usrService := user.NewService(user.NewRepo(app.db))
-	userHandler := user.NewHandler(usrService)
+	userHandler := user.NewHandler(usrService, app.config.JWTSecret)
 	config := echojwt.Config{
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(auth.JWTCustomClaims)
 		},
-		SigningKey: app.config.JWTSecret,
+		SigningKey: []byte(app.config.JWTSecret),
+		TokenLookup: "header:Authorization,cookie:access_token",
 	}
 	e.GET("/signup", userHandler.SignUpPage)
+	e.GET("/login", userHandler.LoginPage)
 	e.POST("/create_user", userHandler.CreateUser)
-	r := e.Group("/api")
-	r.Use(echojwt.WithConfig(config))
+	e.POST("/sign_in", userHandler.Signin)
+	authenticated := e.Group("/dashboard")
+	authenticated.Use(echojwt.WithConfig(config))
+	authenticated.GET("/home", userHandler.Home)
 
 	e.Logger.Fatal(e.Start(":8080"))
 	return e

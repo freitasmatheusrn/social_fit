@@ -8,7 +8,7 @@ type User struct {
 	Cpf       string
 	Email     string
 	Phone     string
-	BirthDate time.Time
+	BirthDate string
 	Password  string
 	Admin     bool
 	CreatedAt time.Time
@@ -19,7 +19,7 @@ type SignupRequest struct {
 	Cpf                  string    `json:"cpf" form:"cpf"`
 	Email                string    `json:"email" form:"email"`
 	Phone                string    `json:"phone" form:"phone"`
-	BirthDate            time.Time `json:"birth_date" form:"birth_date"`
+	BirthDate            string `json:"birth_date" form:"birth_date"`
 	Password             string    `json:"password" form:"password"`
 	PasswordConfirmation string    `json:"password_confirmation" form:"password_confirmation"`
 }

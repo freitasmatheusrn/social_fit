@@ -2,15 +2,16 @@ package user
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 )
 
 type Service struct {
 	repo *Repository
 }
 type ServiceInterface interface {
-	Login(ctx context.Context, credentials SigninRequest) (SigninResponse, error)
-	Signup(ctx context.Context, user SignupRequest) (SignupResponse, error)
+	Login(ctx context.Context, credentials SigninRequest) (SigninResponse, *rest.ApiErr)
+	Signup(ctx context.Context, user SignupRequest) (SignupResponse, *rest.ApiErr)
 }
 
 func NewService(repo *Repository) *Service {
@@ -19,7 +20,7 @@ func NewService(repo *Repository) *Service {
 	}
 }
 
-func (s *Service) Login(ctx context.Context, credentials SigninRequest) (SigninResponse, error) {
+func (s *Service) Login(ctx context.Context, credentials SigninRequest) (SigninResponse, *rest.ApiErr) {
 	user := User{
 		Email:    credentials.Email,
 		Password: credentials.Password,
@@ -37,24 +38,21 @@ func (s *Service) Login(ctx context.Context, credentials SigninRequest) (SigninR
 
 }
 
-func (s *Service) Signup(ctx context.Context, request SignupRequest) (SignupResponse, error) {
-	if request.Password != request.PasswordConfirmation{
-		return SignupResponse{}, fmt.Errorf("as senhas não estão iguais")
-	}
+func (s *Service) Signup(ctx context.Context, request SignupRequest) (SignupResponse, *rest.ApiErr) {
 	u := User{
-		Name: request.Name,
-		Email: request.Email,
-		Cpf: request.Cpf,
-		Phone: request.Phone,
+		Name:      request.Name,
+		Email:     request.Email,
+		Cpf:       request.Cpf,
+		Phone:     request.Phone,
 		BirthDate: request.BirthDate,
-		Password: request.Password,
+		Password:  request.Password,
 	}
 	err := u.ValidateFields()
 	if err != nil {
 		return SignupResponse{}, err
 	}
 	user, err := s.repo.Signup(ctx, u)
-	if err != nil{
+	if err != nil {
 		return SignupResponse{}, err
 	}
 	return SignupResponse{

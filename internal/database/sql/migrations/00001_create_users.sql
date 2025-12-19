@@ -7,8 +7,8 @@ CREATE TABLE users (
     phone VARCHAR(20),
     birth_date DATE NOT NULL,
     admin BOOLEAN DEFAULT false,
-    cpf_number VARCHAR(20) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    cpf VARCHAR(20) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

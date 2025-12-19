@@ -3,19 +3,22 @@ package user
 import (
 	"context"
 	"errors"
-	"fmt"
+	"log"
 
+	"github.com/freitasmatheusrn/social-fit/internal/database"
 	"github.com/freitasmatheusrn/social-fit/pkg/bcrypt"
+	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Repository struct {
 	db *pgx.Conn
 }
 
-type RepositoryInterface interface{
-	Login(ctx context.Context, credentials User) (User, error)
-	Signup(ctx context.Context, user User) (User, error)
+type RepositoryInterface interface {
+	Login(ctx context.Context, credentials User) (User, rest.ApiErr)
+	Signup(ctx context.Context, user User) (User, rest.ApiErr)
 }
 
 func NewRepo(db *pgx.Conn) *Repository {
@@ -24,52 +27,64 @@ func NewRepo(db *pgx.Conn) *Repository {
 	}
 }
 
-func (r *Repository) Login(ctx context.Context, credentials User) (User, error) {
+func (r *Repository) Login(ctx context.Context, credentials User) (User, *rest.ApiErr) {
 	var user User
 	err := r.db.QueryRow(
 		ctx,
-		`SELECT id, name, cpf, email, password, phone, birth_date, created_at
+		`SELECT id, name, email, admin, password
 		 FROM users
 		 WHERE email = $1`,
 		credentials.Email,
-	).Scan(&user.ID, &user.Name, &user.Cpf, &user.Email, &user.Password, &user.Phone,  &user.BirthDate, &user.CreatedAt )
+	).Scan(&user.ID, &user.Name, &user.Email, &user.Admin, &user.Password )
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return User{}, fmt.Errorf("email não encontrado")
+			cause := rest.Causes{
+				Field:   "email",
+				Message: "email não encontrado",
+			}
+			return User{}, rest.NewBadRequestValidationError("email não encontrado", []rest.Causes{cause})
 		}
-		return User{}, fmt.Errorf("erro ao buscar usuário: %w", err)
+		log.Println(err)
+
+		return User{}, rest.NewInternalServerError("erro ao buscar usuário")
 	}
 
-	if err := user.ValidatePassword([]byte(credentials.Password)); err != nil {
-		return User{}, fmt.Errorf("senha inválida")
+	if err := user.ComparePassword([]byte(credentials.Password)); err != nil {
+		cause := rest.Causes{
+			Field:   "password",
+			Message: "senha incorreta",
+		}
+		return User{}, rest.NewBadRequestValidationError("senha incorreta", []rest.Causes{cause})
 	}
 
 	return user, nil
 }
 
-
-func (r *Repository) Signup(ctx context.Context, user User) (User, error) {
-	var s User
+func (r *Repository) Signup(ctx context.Context, user User) (User, *rest.ApiErr) {
+	var u User
 	hashPassword, err := bcrypt.HashPassword(user.Password)
-	if err != nil{
-		return User{}, err
+	if err != nil {
+		return User{}, rest.NewInternalServerError("erro do servidor")
 	}
 	err = r.db.QueryRow(
 		ctx,
-		`INSERT INTO users (name, email, password, cpf, phone, birthdate)
-		 VALUES ($1, $2, $3)
-		 RETURNING id name, email, admin`,
+		`INSERT INTO users (name, email, password, cpf, phone, birth_date)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING id, name, email, admin`,
 		user.Name,
 		user.Email,
 		hashPassword,
 		user.Cpf,
 		user.Phone,
 		user.BirthDate,
-	).Scan(&s.ID, &s.Name, &s.Email, &s.Admin )
+	).Scan(&u.ID, &u.Name, &u.Email, &u.Admin)
 
 	if err != nil {
-		return User{}, fmt.Errorf("erro ao inserir usuário: %w", err)
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			return User{}, database.GetError(pgErr, []string{"email"})
+		}
+		return User{}, rest.NewInternalServerError("erro interno")
 	}
 
-	return s, nil
+	return u, nil
 }

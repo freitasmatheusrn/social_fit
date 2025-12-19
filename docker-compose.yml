@@ -5,7 +5,6 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: social_fit_reservation_db
-    restart: unless-stopped
     environment:
       POSTGRES_USER: social_fit_admin
       POSTGRES_PASSWORD: social_fit_password_123
@@ -28,7 +27,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: social_fit_reservation_cache
-    restart: unless-stopped
     command: redis-server --requirepass redis_password_123 --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
@@ -46,7 +44,6 @@ services:
   redis-commander:
     image: rediscommander/redis-commander:latest
     container_name: redis_commander
-    restart: unless-stopped
     environment:
       - REDIS_HOSTS=local:redis:6379:0:redis_password_123
     ports:
