@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
@@ -13,7 +14,7 @@ func GetError(err *pgconn.PgError, columns []string) *rest.ApiErr {
 			if strings.Contains(err.ConstraintName, c) {
 				cause :=  rest.Causes{
 					Field: c,
-					Message: "campo já está em uso",
+					Message: fmt.Sprintf("campo %s já está em uso", c),
 				}
 				return rest.NewBadRequestValidationError("campo duplicado", []rest.Causes{cause})
 			}

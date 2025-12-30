@@ -3,6 +3,7 @@ package userpgs
 import (
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 	"github.com/freitasmatheusrn/social-fit/internal/views"
+	"github.com/freitasmatheusrn/social-fit/pkg/form"
 	)
 
 
@@ -56,14 +57,14 @@ templ SigninForm(errs *rest.ApiErr, data SigninFormData) {
 				value={ data.Email }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "email")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "email")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "email")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "email")),
 				}
 				placeholder="seu@email.com"
 			/>
-			if hasFieldErrors(errs, "email") {
+			if form.HasFieldErrors(errs, "email") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "email") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "email") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -84,14 +85,14 @@ templ SigninForm(errs *rest.ApiErr, data SigninFormData) {
 				minlength="8"
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "password")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "password")),
 				}
 				placeholder="••••••••"
 			/>
-			if hasFieldErrors(errs, "password") {
+			if form.HasFieldErrors(errs, "password") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "password") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "password") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>

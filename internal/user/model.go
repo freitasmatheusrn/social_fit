@@ -42,3 +42,9 @@ type SigninResponse struct {
 	Email string `json:"email" form:"email"`
 	Admin bool   `json:"admin" form:"admin"`
 }
+
+type CurrentUser struct {
+	ID    string
+	Name  string
+	Email string
+}

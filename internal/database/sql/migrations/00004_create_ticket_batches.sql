@@ -1,15 +1,14 @@
-
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE ticket_batches (
-    id BIGSERIAL PRIMARY KEY,
-    event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     batch_name VARCHAR(100) NOT NULL,
     price DECIMAL(10, 2) NOT NULL CHECK (price >= 0),
-    date_limit TIMESTAMPTZ,
-    quantity_limit INTEGER,
+    date_limit TIMESTAMPTZ NOT NULL,
+    quantity_limit INTEGER NOT NULL,
     batch_order INTEGER NOT NULL,
-    active BOOLEAN DEFAULT true,
+    active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMPTZ,

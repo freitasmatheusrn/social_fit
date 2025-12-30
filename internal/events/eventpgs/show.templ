@@ -1,0 +1,247 @@
+package eventpgs
+
+
+
+
+import 
+(
+"github.com/freitasmatheusrn/social-fit/internal/views"
+ components "github.com/freitasmatheusrn/social-fit/internal/events/eventpgs/components"
+"github.com/freitasmatheusrn/social-fit/internal/events/dtos"
+"fmt"
+"time"
+)
+
+templ Show(event *dtos.EventShow) {
+   @views.DashboardBase(){
+	 <div class="min-h-screen bg-gray-50 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header com Poster e Info Básica -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                <div class="md:flex">
+                    <!-- Poster -->
+                    <div class="md:flex-shrink-0 md:w-1/3">
+                        <img 
+                            src={ event.PosterURL } 
+                            alt={ event.Title }
+                            class="h-64 w-full object-cover md:h-full"
+                        />
+                    </div>
+                    
+                    <!-- Informações Principais -->
+                    <div class="p-8 md:w-2/3">
+                        <div class="flex items-center justify-between mb-4">
+                            <h1 class="text-3xl font-bold text-gray-900">{ event.Title }</h1>
+                            @components.StatusBadge(string(event.Status))
+                        </div>
+                        
+                        if event.Description != nil {
+                            <p class="text-gray-600 mb-6">{ *event.Description }</p>
+                        }
+                        
+                        <!-- Data e Local -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-gray-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Data e Horário</p>
+                                    <p class="text-sm text-gray-600">{ formatDateTime(event.StartDate) }</p>
+                                    <p class="text-sm text-gray-600">até { formatDateTime(event.EndDate) }</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-gray-400 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">Local</p>
+                                    <p class="text-sm text-gray-600">{ event.Street }, { event.Neighbourhood }</p>
+                                    <p class="text-sm text-gray-600">{ event.City }</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Capacidade e Inscrições -->
+                        <div class="flex items-center space-x-6 mb-6">
+                            <div>
+                                <p class="text-sm text-gray-500">Capacidade Máxima</p>
+                                <p class="text-2xl font-bold text-gray-900">{ fmt.Sprintf("%d", event.MaxCapacity) }</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Inscrições</p>
+                                <p class="text-2xl font-bold text-indigo-600">{ fmt.Sprintf("%d", event.Registrations) }</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Disponíveis</p>
+                                <p class="text-2xl font-bold text-green-600">
+                                    { fmt.Sprintf("%d", event.MaxCapacity - int64(event.Registrations)) }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Grid de Ações e Lote Atual -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Lote Atual -->
+                <div class="lg:col-span-2 bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-gray-900">Lote Atual</h2>
+                        <a 
+                            href={ templ.SafeURL(fmt.Sprintf("/events/%s/batches/new", event.ID)) }
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Criar Novo Lote
+                        </a>
+                    </div>
+                    
+                    if event.TicketBatch.ID != "" {
+                        <div class="border-l-4 border-indigo-500 bg-indigo-50 p-6 rounded-r-lg">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-semibold text-gray-900">{ event.TicketBatch.BatchName }</h3>
+                                if event.TicketBatch.Active {
+                                    <span class="px-3 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded-full">
+                                        Ativo
+                                    </span>
+                                }
+                            </div>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">Preço</p>
+                                    <p class="text-xl font-bold text-gray-900">
+                                        R$ { fmt.Sprintf("%.2f", event.TicketBatch.Price) }
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Vendidos</p>
+                                    <p class="text-xl font-bold text-indigo-600">
+                                        { fmt.Sprintf("%d", event.TicketBatch.SoldQty) }
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Limite</p>
+                                    <p class="text-xl font-bold text-gray-900">
+                                        { fmt.Sprintf("%d", event.TicketBatch.QuantityLimit) }
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Arrecadado</p>
+                                    <p class="text-xl font-bold text-green-600">
+                                        R$ { fmt.Sprintf("%.2f", event.TicketBatch.TotalSold) }
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Barra de Progresso -->
+                            <div class="mb-2">
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span>Progresso de vendas</span>
+                                    <span>
+                                        { fmt.Sprintf("%.0f%%", float64(event.TicketBatch.SoldQty) / float64(event.TicketBatch.QuantityLimit) * 100) }
+                                    </span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div 
+                                        class="bg-indigo-600 h-2.5 rounded-full"
+                                        style={ fmt.Sprintf("width: %.0f%%", float64(event.TicketBatch.SoldQty) / float64(event.TicketBatch.QuantityLimit) * 100) }
+                                    ></div>
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mt-4">
+                                <span class="font-medium">Válido até:</span> { formatDateTime(event.TicketBatch.DateLimit) }
+                            </p>
+                        </div>
+                    } else {
+                        <div class="text-center py-12">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum lote ativo</h3>
+                            <p class="mt-1 text-sm text-gray-500">Comece criando um novo lote de ingressos.</p>
+                        </div>
+                    }
+                </div>
+                
+                <!-- Menu de Ações -->
+                <div class="space-y-4">
+                    <!-- Inscrições -->
+                    <a 
+                        href={ templ.SafeURL(fmt.Sprintf("/events/%s/registrations", event.ID)) }
+                        class="block bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Inscrições</h3>
+                                <p class="text-sm text-gray-500">Ver todos os inscritos</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- Balanço -->
+                    <a 
+                        href={ templ.SafeURL(fmt.Sprintf("/events/%s/balance", event.ID)) }
+                        class="block bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-green-500 text-white">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Balanço</h3>
+                                <p class="text-sm text-gray-500">Ver relatório financeiro</p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- Editar Evento -->
+                    <a 
+                        href={ templ.SafeURL(fmt.Sprintf("/events/%s/edit", event.ID)) }
+                        class="block bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+                    >
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-12 w-12 rounded-md bg-purple-500 text-white">
+                                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-medium text-gray-900">Editar Evento</h3>
+                                <p class="text-sm text-gray-500">Atualizar informações</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+   }
+}
+
+
+
+func formatDateTime(t time.Time) string {
+    return t.Format("02/01/2006 às 15:04")
+}

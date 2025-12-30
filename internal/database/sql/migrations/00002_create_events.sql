@@ -3,16 +3,18 @@
 CREATE TYPE event_status AS ENUM ('draft', 'published', 'cancelled', 'finished');
 
 CREATE TABLE events (
-    id BIGSERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
     description TEXT,
     start_date TIMESTAMPTZ NOT NULL,
     end_date TIMESTAMPTZ NOT NULL,
-    city VARCHAR(50),
-    street VARCHAR(50),
-    neighbourhood VARCHAR(50),
-    max_capacity INTEGER,
-    status event_status DEFAULT 'draft',
+    city VARCHAR(50) NOT NULL,
+    street VARCHAR(50) NOT NULL,
+    neighbourhood VARCHAR(50) NOT NULL,
+    max_capacity INTEGER NOT NULL,
+    status event_status DEFAULT 'draft' NOT NULL,
+    poster_url VARCHAR(500) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT check_dates CHECK (end_date >= start_date)
@@ -20,7 +22,7 @@ CREATE TABLE events (
 
 CREATE INDEX idx_events_status ON events(status);
 CREATE INDEX idx_events_start_date ON events(start_date);
-
+CREATE INDEX idx_events_user_id ON events(user_id);
 -- +goose StatementEnd
 
 -- +goose Down

@@ -3,20 +3,26 @@ package user
 import (
 	"context"
 
+	"github.com/freitasmatheusrn/social-fit/internal/events"
+	evtDtos "github.com/freitasmatheusrn/social-fit/internal/events/dtos"
+	"github.com/freitasmatheusrn/social-fit/pkg/fmtdate"
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 )
 
 type Service struct {
-	repo *Repository
+	repo         *Repository
+	eventService events.ServiceInterface
 }
 type ServiceInterface interface {
 	Login(ctx context.Context, credentials SigninRequest) (SigninResponse, *rest.ApiErr)
 	Signup(ctx context.Context, user SignupRequest) (SignupResponse, *rest.ApiErr)
+	Home(ctx context.Context, userID string) (evtDtos.EventCard, *rest.ApiErr)
 }
 
-func NewService(repo *Repository) *Service {
+func NewService(repo *Repository, e events.ServiceInterface) *Service {
 	return &Service{
-		repo: repo,
+		repo:         repo,
+		eventService: e,
 	}
 }
 
@@ -61,4 +67,25 @@ func (s *Service) Signup(ctx context.Context, request SignupRequest) (SignupResp
 		Email: user.Email,
 		Admin: user.Admin,
 	}, nil
+}
+
+func (s *Service) Home(ctx context.Context, userID string) ([]evtDtos.EventCard, *rest.ApiErr) {
+	events, err := s.eventService.FindManyByUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var e []evtDtos.EventCard
+	for _, event := range events {
+		e = append(e, evtDtos.EventCard{
+			ID:          event.ID,
+			UserID:      event.UserID,
+			Title:       event.Title,
+			StartDate:   event.StartDate.Format(fmtdate.DateTimeLayout),
+			EndDate:     event.EndDate.Format(fmtdate.DateTimeLayout),
+			City:        event.City,
+			MaxCapacity: event.MaxCapacity,
+			Status:      string(event.Status),
+		})
+	}
+	return e, nil
 }

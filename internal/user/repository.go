@@ -35,7 +35,7 @@ func (r *Repository) Login(ctx context.Context, credentials User) (User, *rest.A
 		 FROM users
 		 WHERE email = $1`,
 		credentials.Email,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.Admin, &user.Password )
+	).Scan(&user.ID, &user.Name, &user.Email, &user.Admin, &user.Password)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			cause := rest.Causes{

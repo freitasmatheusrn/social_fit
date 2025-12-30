@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/freitasmatheusrn/social-fit/internal/views"
+	"github.com/freitasmatheusrn/social-fit/pkg/form"
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 )
 
@@ -99,8 +100,8 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 		}
 		var templ_7745c5c3_Var4 = []any{
 			"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-			templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "email")),
-			templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "email")),
+			templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "email")),
+			templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "email")),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var4...)
 		if templ_7745c5c3_Err != nil {
@@ -113,7 +114,7 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Email)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 56, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 57, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -136,12 +137,12 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if hasFieldErrors(errs, "email") {
+		if form.HasFieldErrors(errs, "email") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div class=\"mt-1 space-y-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, fieldErr := range getFieldErrors(errs, "email") {
+			for _, fieldErr := range form.GetFieldErrors(errs, "email") {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<p class=\"text-sm text-red-600\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -149,7 +150,7 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 				var templ_7745c5c3_Var7 string
 				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErr.Message)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 67, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 68, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {
@@ -171,8 +172,8 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 		}
 		var templ_7745c5c3_Var8 = []any{
 			"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-			templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password")),
-			templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password")),
+			templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "password")),
+			templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "password")),
 		}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var8...)
 		if templ_7745c5c3_Err != nil {
@@ -195,12 +196,12 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if hasFieldErrors(errs, "password") {
+		if form.HasFieldErrors(errs, "password") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div class=\"mt-1 space-y-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for _, fieldErr := range getFieldErrors(errs, "password") {
+			for _, fieldErr := range form.GetFieldErrors(errs, "password") {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<p class=\"text-sm text-red-600\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -208,7 +209,7 @@ func SigninForm(errs *rest.ApiErr, data SigninFormData) templ.Component {
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fieldErr.Message)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 95, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/user/userpgs/signin.templ`, Line: 96, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {

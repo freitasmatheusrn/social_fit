@@ -3,10 +3,10 @@
 CREATE TYPE payment_status AS ENUM ('pending', 'confirmed', 'cancelled', 'refunded');
 
 CREATE TABLE registrations (
-    id BIGSERIAL PRIMARY KEY,
-    event_id BIGINT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    ticket_batch_id BIGINT NOT NULL REFERENCES ticket_batches(id) ON DELETE RESTRICT,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    ticket_batch_id UUID NOT NULL REFERENCES ticket_batches(id) ON DELETE RESTRICT,
     amount_paid DECIMAL(10, 2) NOT NULL CHECK (amount_paid >= 0),
     payment_status payment_status DEFAULT 'pending',
     registration_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

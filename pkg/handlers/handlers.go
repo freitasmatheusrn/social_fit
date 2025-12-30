@@ -5,6 +5,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/freitasmatheusrn/social-fit/internal/views"
+	"github.com/freitasmatheusrn/social-fit/pkg/renderer"
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 	"github.com/labstack/echo/v4"
 )
@@ -28,12 +29,17 @@ func CustomErrorHandler(err error, c echo.Context) {
 	}
 
 	isHTMX := c.Request().Header.Get("HX-Request") == "true"
-
-	if isHTMX {
+	isJson := c.Request().Header.Get("Accept") == "application/json"
+	switch {
+	case isHTMX:
 		handleHTMXError(c, apiErr)
-	} else {
+		return
+	case isJson:
 		c.JSON(apiErr.Code, apiErr)
+	default:
+		handleHTMLRedirect(c, apiErr)
 	}
+
 }
 
 func handleHTMXError(c echo.Context, apiErr *rest.ApiErr) {
@@ -45,7 +51,8 @@ func handleHTMXError(c echo.Context, apiErr *rest.ApiErr) {
 	case http.StatusBadRequest:
 		component = views.BadRequest(apiErr)
 	case http.StatusUnauthorized:
-		component = views.Unauthorized(apiErr)
+		c.Response().Header().Set("HX-Redirect", "/sign_in")
+		return
 	case http.StatusForbidden:
 		component = views.Forbidden(apiErr)
 	case http.StatusNotFound:
@@ -57,4 +64,26 @@ func handleHTMXError(c echo.Context, apiErr *rest.ApiErr) {
 	}
 
 	component.Render(c.Request().Context(), c.Response().Writer)
+}
+
+func handleHTMLRedirect(c echo.Context, apiErr *rest.ApiErr) {
+	switch apiErr.Code {
+	case http.StatusUnauthorized:
+		_ = c.Redirect(http.StatusSeeOther, "/login")
+
+	case http.StatusForbidden:
+		renderer.Render(c, views.Forbidden(apiErr), 403)
+
+	case http.StatusNotFound:
+		_ = renderer.Render(c, views.NotFound(apiErr), 404)
+
+	case http.StatusUnprocessableEntity:
+		renderer.Render(c, views.UnprocessableEntity(apiErr), 422)
+
+	case http.StatusBadRequest:
+		_ = renderer.Render(c, views.BadRequest(apiErr), 400)
+
+	default:
+		_ = renderer.Render(c, views.InternalServerError(apiErr), 500)
+	}
 }

@@ -3,11 +3,13 @@ package user
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/freitasmatheusrn/social-fit/internal/user/userpgs"
 	"github.com/freitasmatheusrn/social-fit/pkg/auth"
 	"github.com/freitasmatheusrn/social-fit/pkg/renderer"
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -45,9 +47,9 @@ func (h *Handler) CreateUser(c echo.Context) error {
 			Phone:     s.Phone,
 			BirthDate: s.BirthDate,
 		}
-		return renderer.Respond(c, userpgs.SignupForm(restErr, data), s, http.StatusOK)
+		return renderer.Respond(c, userpgs.SignupForm(restErr, data), s, restErr)
 	}
-	claims := auth.NewClaims(response.Name, response.Email, response.Admin)
+	claims := auth.NewClaims(response.Name, response.Email, response.ID, response.Admin)
 
 	token, err := auth.GenerateJWT(claims, h.secret)
 	if err != nil {
@@ -65,12 +67,11 @@ func (h *Handler) CreateUser(c echo.Context) error {
 	}
 
 	c.SetCookie(cookie)
-	c.Response().Header().Set("HX-Redirect", "/home")
+	c.Response().Header().Set("HX-Redirect", "/dashboard/home")
 	return c.NoContent(http.StatusCreated)
 }
 
-
-func (h *Handler) Signin(c echo.Context) error{
+func (h *Handler) Signin(c echo.Context) error {
 	var s SigninRequest
 	err := c.Bind(&s)
 	if err != nil {
@@ -79,12 +80,12 @@ func (h *Handler) Signin(c echo.Context) error{
 	response, restErr := h.Service.Login(c.Request().Context(), s)
 	if restErr != nil {
 		data := userpgs.SigninFormData{
-			Email:     s.Email,
+			Email: s.Email,
 		}
 		log.Println(restErr)
-		return renderer.Respond(c, userpgs.SigninForm(restErr, data), s, http.StatusOK)
+		return renderer.Respond(c, userpgs.SigninForm(restErr, data), s, restErr)
 	}
-	claims := auth.NewClaims(response.Name, response.Email, response.Admin)
+	claims := auth.NewClaims(response.Name, response.Email, response.ID, response.Admin)
 
 	token, err := auth.GenerateJWT(claims, h.secret)
 	if err != nil {
@@ -97,6 +98,7 @@ func (h *Handler) Signin(c echo.Context) error{
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
+		Expires:   time.Now().Add(72 * time.Hour),
 	}
 
 	c.SetCookie(cookie)
@@ -104,7 +106,19 @@ func (h *Handler) Signin(c echo.Context) error{
 	return c.NoContent(http.StatusCreated)
 }
 
-func (h *Handler) Home(c echo.Context) error{
+func (h *Handler) Home(c echo.Context) error {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return rest.NewUnauthorizedRequestError("token inválido")
+	}
 
-	return renderer.Render(c, userpgs.Home(), http.StatusOK)
+	claims, ok := token.Claims.(*auth.JWTCustomClaims)
+	if !ok {
+		return rest.NewUnauthorizedRequestError("claims inválidas")
+	}
+	events, err := h.Service.Home(c.Request().Context(), claims.UserID)
+	if err != nil {
+		return err
+	}
+	return renderer.Render(c, userpgs.Home(events), http.StatusOK)
 }

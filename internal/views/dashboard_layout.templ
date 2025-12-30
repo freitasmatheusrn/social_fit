@@ -1,0 +1,177 @@
+package views
+
+templ DashboardBase() {
+	<!DOCTYPE html>
+	<html lang="pt-BR">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<link href="/assets/output.css" rel="stylesheet"/>
+			<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+			<title>Cadastro</title>
+		</head>
+		<body class="bg-gradient-to-br from-purple-50 to-purple-100 min-h-screen" hx-ext="event-header">
+			<!-- Toast Container -->
+			<div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+			
+			<!-- Navbar -->
+			<nav class="bg-white shadow-lg">
+				<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div class="flex justify-between h-16">
+						<!-- Logo/Brand -->
+						<div class="flex items-center">
+							<a href="/" class="text-2xl font-bold text-purple-600">
+								Dashboard
+							</a>
+						</div>
+						
+						<!-- Desktop Menu -->
+						<div class="hidden md:flex md:items-center md:space-x-8">
+							<a href="/eventos" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+								Meus Eventos
+							</a>
+							<a href="/criar-evento" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+								Criar Evento
+							</a>
+							<a href="/balance" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+								Balanço
+							</a>
+							
+							<!-- Profile Picture -->
+							<a href="/perfil" class="flex items-center">
+								<img 
+									src="/assets/default-avatar.jpg" 
+									alt="Perfil" 
+									class="h-10 w-10 rounded-full border-2 border-purple-600 hover:border-purple-800 transition-colors"
+								/>
+							</a>
+						</div>
+						
+						<!-- Mobile menu button -->
+						<div class="flex items-center md:hidden">
+							<button 
+								id="mobile-menu-button"
+								type="button" 
+								class="text-gray-700 hover:text-purple-600 focus:outline-none focus:text-purple-600"
+								onclick="toggleMobileMenu()"
+							>
+								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+									<path id="close-icon" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Mobile Menu -->
+				<div id="mobile-menu" class="hidden md:hidden">
+					<div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+						<a href="/perfil" class="flex items-center px-3 py-3 border-b border-gray-100">
+							<img 
+								src="/assets/default-avatar.jpg" 
+								alt="Perfil" 
+								class="h-12 w-12 rounded-full border-2 border-purple-600"
+							/>
+							<span class="ml-3 text-gray-700 font-medium">Meu Perfil</span>
+						</a>
+						
+						<a href="/home" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-colors">
+							Meus Eventos
+						</a>
+						<a href="/create_event" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-colors">
+							Criar Evento
+						</a>
+						<a href="/balance" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-colors">
+							Balanço
+						</a>
+						<a href="/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 transition-colors">
+							Sair
+						</a>
+					</div>
+				</div>
+			</nav>
+			
+			<!-- Content -->
+			<div id="content" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				{ children... }
+			</div>
+			
+			<script>
+				function toggleMobileMenu() {
+					const menu = document.getElementById('mobile-menu');
+					const menuIcon = document.getElementById('menu-icon');
+					const closeIcon = document.getElementById('close-icon');
+					
+					menu.classList.toggle('hidden');
+					menuIcon.classList.toggle('hidden');
+					closeIcon.classList.toggle('hidden');
+				}
+				
+				// Toast notification system
+				function showToast(message, type = 'success') {
+					console.log("PASSOU NO TOAST")
+					const container = document.getElementById('toast-container');
+					const toast = document.createElement('div');
+					
+					// Define colors based on type
+					const colors = {
+						success: 'bg-green-500',
+						error: 'bg-red-500',
+						warning: 'bg-yellow-500',
+						info: 'bg-blue-500'
+					};
+					
+					const icons = {
+						success: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+						</svg>`,
+						error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+						</svg>`,
+						warning: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+						</svg>`,
+						info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>`
+					};
+					
+					toast.className = `${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 min-w-[300px] max-w-md transform transition-all duration-300 ease-in-out translate-x-full opacity-0`;
+					toast.innerHTML = `
+						<div class="flex-shrink-0">
+							${icons[type]}
+						</div>
+						<div class="flex-1">
+							<p class="font-medium">${message}</p>
+						</div>
+						<button onclick="this.parentElement.remove()" class="flex-shrink-0 ml-4 hover:bg-white hover:bg-opacity-20 rounded p-1 transition-colors">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+					`;
+					
+					container.appendChild(toast);
+					
+					// Trigger animation
+					setTimeout(() => {
+						toast.classList.remove('translate-x-full', 'opacity-0');
+					}, 10);
+					
+					// Auto remove after 5 seconds
+					setTimeout(() => {
+						toast.classList.add('translate-x-full', 'opacity-0');
+						setTimeout(() => toast.remove(), 300);
+					}, 5000);
+				}
+				
+				// Listen for HTMX events
+				document.body.addEventListener('showToast', function(evt) {
+					console.log('Toast event received:', evt.detail);
+					showToast(evt.detail.message, evt.detail.level || 'success');
+				});
+			</script>
+		</body>
+	</html>
+}

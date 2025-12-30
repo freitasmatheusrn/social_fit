@@ -3,6 +3,7 @@ package userpgs
 import (
 	"github.com/freitasmatheusrn/social-fit/pkg/rest"
 	"github.com/freitasmatheusrn/social-fit/internal/views"
+	"github.com/freitasmatheusrn/social-fit/pkg/form"
 	)
 
 
@@ -16,35 +17,7 @@ type SignupFormData struct {
 	BirthDate string
 }
 
-func hasFieldErrors(errs *rest.ApiErr, fieldName string) bool {
-	if errs == nil || len(errs.Causes) == 0 {
-		return false
-	}
 
-	for _, cause := range errs.Causes {
-		if cause.Field == fieldName {
-			return true
-		}
-	}
-
-	return false
-}
-
-
-func getFieldErrors(errs *rest.ApiErr, fieldName string) []rest.Causes {
-	if errs == nil || len(errs.Causes) == 0 {
-		return nil
-	}
-
-	var fieldErrors []rest.Causes
-	for _, cause := range errs.Causes {
-		if cause.Field == fieldName {
-			fieldErrors = append(fieldErrors, cause)
-		}
-	}
-
-	return fieldErrors
-}
 
 templ Signup(errs *rest.ApiErr ) {
 	@views.Base() {
@@ -91,15 +64,15 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				value={ data.Name }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "name")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "name")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "name")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "name")),
 				}
 				placeholder="Seu nome completo"
 			/>
 			<!-- CORRIGIDO: itera sobre fieldErr que é rest.Causes, não error -->
-			if hasFieldErrors(errs, "name") {
+			if form.HasFieldErrors(errs, "name") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "name") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "name") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -120,14 +93,14 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				value={ data.CPF }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "cpf")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "cpf")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "cpf")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "cpf")),
 				}
 				placeholder="000.000.000-00"
 			/>
-			if hasFieldErrors(errs, "cpf") {
+			if form.HasFieldErrors(errs, "cpf") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "cpf") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "cpf") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -147,14 +120,14 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				value={ data.Email }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "email")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "email")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "email")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "email")),
 				}
 				placeholder="seu@email.com"
 			/>
-			if hasFieldErrors(errs, "email") {
+			if form.HasFieldErrors(errs, "email") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "email") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "email") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -175,14 +148,14 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				value={ data.Phone }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "phone")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "phone")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "phone")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "phone")),
 				}
 				placeholder="(00) 00000-0000"
 			/>
-			if hasFieldErrors(errs, "phone") {
+			if form.HasFieldErrors(errs, "phone") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "phone") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "phone") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -202,13 +175,13 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				value={ data.BirthDate }
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "birth_date")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "birth_date")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "birth_date")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "birth_date")),
 				}
 			/>
-			if hasFieldErrors(errs, "birth_date") {
+			if form.HasFieldErrors(errs, "birth_date") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "birth_date") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "birth_date") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -228,14 +201,14 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				minlength="8"
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "password")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "password")),
 				}
 				placeholder="••••••••"
 			/>
-			if hasFieldErrors(errs, "password") {
+			if form.HasFieldErrors(errs, "password") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "password") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "password") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
@@ -255,14 +228,14 @@ templ SignupForm(errs *rest.ApiErr, data SignupFormData) {
 				minlength="8"
 				class={
 					"appearance-none block w-full px-4 py-3 border rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition duration-150",
-					templ.KV("border-red-300 focus:ring-red-600", hasFieldErrors(errs, "password_confirmation")),
-					templ.KV("border-gray-300 focus:ring-purple-600", !hasFieldErrors(errs, "password_confirmation")),
+					templ.KV("border-red-300 focus:ring-red-600", form.HasFieldErrors(errs, "password_confirmation")),
+					templ.KV("border-gray-300 focus:ring-purple-600", !form.HasFieldErrors(errs, "password_confirmation")),
 				}
 				placeholder="••••••••"
 			/>
-			if hasFieldErrors(errs, "password_confirmation") {
+			if form.HasFieldErrors(errs, "password_confirmation") {
 				<div class="mt-1 space-y-1">
-					for _, fieldErr := range getFieldErrors(errs, "password_confirmation") {
+					for _, fieldErr := range form.GetFieldErrors(errs, "password_confirmation") {
 						<p class="text-sm text-red-600">{ fieldErr.Message }</p>
 					}
 				</div>
